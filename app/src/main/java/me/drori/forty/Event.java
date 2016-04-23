@@ -38,6 +38,9 @@ class Event {
     private final long mBegin;
     private long mEnd;
     private final long mCalendarId;
+    private static final long MINIMAL_LISTENING_TIME = 60 * 1000; // one minute in ms
+    private static final long SEPARATE_EVENT = MINIMAL_LISTENING_TIME;
+    private static final long ZERO_LENGTH_EVENT = 1 * 1000; // one second in ms
 
     private Event(long id, String title, String description, long begin, long end) {
         mContext = FortyNotificationListenerService.getContext();
@@ -69,12 +72,24 @@ class Event {
                 + " description: " + description);
     }
 
-    private long getBegin() {
-        return mBegin;
+    private void setEnd(long newEndTime) {
+        mEnd = newEndTime;
     }
 
-    private long getEnd() {
-        return mEnd;
+    private boolean isZeroLengthEvent() {
+        return (getDuration() < ZERO_LENGTH_EVENT);
+    }
+
+    private boolean isSeparateEvents(Event event) {
+        long timeBetweenEvents = mBegin - event.mEnd;
+        if (timeBetweenEvents < 0) {
+            timeBetweenEvents = event.mBegin - mEnd;
+        }
+        return (timeBetweenEvents > SEPARATE_EVENT);
+    }
+
+    private long getDuration() {
+        return mEnd - mBegin;
     }
 
     private Event getLastEvent() {
@@ -129,13 +144,17 @@ class Event {
         }
         Event last = getLastEvent();
         if (last != null) {
-            long begin = last.getBegin();
-            long end = last.getEnd();
-            long diff = end - begin;
-            long diff2 = mBegin - begin;
-            if (diff < 1 * 1000 && diff2 < 60 * 1000) {
-                Log.i(mTag, "No need to add new event.");
-                return;
+            boolean zeroLengthEvent = last.isZeroLengthEvent();
+            boolean separateEvents = last.isSeparateEvents(this);
+            if (!separateEvents) {
+                if (zeroLengthEvent) {
+                    Log.i(mTag, "No need to add new event because last event did not finish.");
+                    return;
+                } else {
+                    Log.i(mTag, "Reopen last event in order to merge listening block.");
+                    last.setEnd(last.mBegin);
+                    return;
+                }
             }
         }
         long startMillis;
@@ -162,22 +181,19 @@ class Event {
 
     public void updateEndTime() {
         Event last = getLastEvent();
-        if (last == null) {
+        if (last == null || !last.isZeroLengthEvent()) {
             // nothing to update
             Log.i(mTag, "No event to update end time.");
             return;
-        } else {
-            long begin = last.getBegin();
-            long end = last.getEnd();
-            long diff = end - begin;
-            long diff2 = mBegin - begin;
-            if (diff < 1 * 1000 && diff2 < 60 * 1000) {
-                last.delete();
-                Log.i(mTag, "Less than a minute of play gets deleted.");
-                return;
-            }
         }
+
         long endTime = Calendar.getInstance().getTimeInMillis();
+        last.setEnd(endTime);
+        if (last.getDuration() < MINIMAL_LISTENING_TIME) {
+            last.delete();
+            Log.i(mTag, "Less than a minute of play gets deleted.");
+            return;
+        }
         ContentResolver cr = mContext.getContentResolver();
         ContentValues values = new ContentValues();
         Uri updateUri;
