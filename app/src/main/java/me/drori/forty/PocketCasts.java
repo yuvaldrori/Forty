@@ -3,6 +3,9 @@ package me.drori.forty;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 
+import java.text.Format;
+import java.text.MessageFormat;
+
 class PocketCasts {
 
     public static final String PKG_NAME = "au.com.shiftyjelly.pocketcasts";
@@ -26,7 +29,9 @@ class PocketCasts {
     }
 
     public void run() {
-        Event event = new Event(mPodcast, mEpisode);
+        String title = MessageFormat.format("{}, {}", mEpisode, mPodcast);
+        String description = MessageFormat.format("{}\n{}", mPodcast, mEpisode);
+        Event event = new Event(title, mEpisode);
         switch (mFlags) {
             case PLAY:
                 event.add();
