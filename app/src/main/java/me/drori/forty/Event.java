@@ -1,214 +1,104 @@
 package me.drori.forty;
 
-import android.Manifest;
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
-import android.provider.CalendarContract.Events;
-import android.support.v4.content.ContextCompat;
-import android.util.Log;
+import java.text.MessageFormat;
 
-import java.util.Calendar;
-import java.util.TimeZone;
+public class Event {
 
-class Event {
+    private long begin;
+    private long end;
+    private long id;
+    private String application;
+    private String title;
+    private String description;
 
-    private static final String[] EVENT_PROJECTION = new String[]{
-            Events._ID,           // 0
-            Events.DTSTART,       // 1
-            Events.DTEND,         // 2
-            Events.TITLE,         // 3
-            Events.DESCRIPTION    // 4
-    };
-    // The indices for the projection array above.
-    private static final int EVENT_PROJECTION_ID_INDEX = 0;
-    private static final int EVENT_PROJECTION_BEGIN_INDEX = 1;
-    private static final int EVENT_PROJECTION_END_INDEX = 2;
-    private static final int EVENT_PROJECTION_TITLE_INDEX = 3;
-    private static final int EVENT_PROJECTION_DESCRIPTION_INDEX = 4;
-    private final Context mContext;
-    private final String mTag;
-    private long mId;
-    private final String mTitle;
-    private final String mDescription;
-    private final long mBegin;
-    private long mEnd;
-    private final long mCalendarId;
-    private static final long MINIMAL_LISTENING_TIME = 60 * 1000; // one minute in ms
-    private static final long SEPARATE_EVENT = MINIMAL_LISTENING_TIME;
-    private static final long ZERO_LENGTH_EVENT = 1 * 1000; // one second in ms
-
-    private Event(long id, String title, String description, long begin, long end) {
-        mContext = FortyNotificationListenerService.getContext();
-        mTag = FortyNotificationListenerService.getTag();
-
-        mId = id;
-        mTitle = title;
-        mDescription = description;
-        mBegin = begin;
-        mEnd = end;
-        mCalendarId = FortyNotificationListenerService.getCalendarId();
-
-        Log.d(mTag, "Title: " + title
-                + " description: " + description
-                + " begin: " + begin
-                + " end: " + end);
+    public Event(long begin, long end, long id, String title, String description) {
+        this.begin = begin;
+        this.end = end;
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.application = description.split("\n")[1];
     }
 
-    public Event(String title, String description) {
-        mContext = FortyNotificationListenerService.getContext();
-        mTag = FortyNotificationListenerService.getTag();
-
-        mTitle = title;
-        mDescription = description;
-        mCalendarId = FortyNotificationListenerService.getCalendarId();
-        mBegin = Calendar.getInstance().getTimeInMillis();
-
-        Log.d(mTag, "Title: " + title
-                + " description: " + description);
+    public Event(Notification notification) {
+        this.begin = notification.getTime();
+        this.end = notification.getTime();
+        this.id = -1;
+        this.application = notification.getApplication();
+        this.title = MessageFormat.format("{0} {1}", notification.getText(), notification.getTitle());
+        this.description = MessageFormat.format("{0}\n{1}", this.title, this.application);
     }
 
-    private void setEnd(long newEndTime) {
-        mEnd = newEndTime;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Event event = (Event) o;
+
+        if (begin != event.begin) return false;
+        if (end != event.end) return false;
+        if (!application.equals(event.application)) return false;
+        if (!title.equals(event.title)) return false;
+        return description.equals(event.description);
+
     }
 
-    private boolean isZeroLengthEvent() {
-        return (getDuration() < ZERO_LENGTH_EVENT);
+    @Override
+    public int hashCode() {
+        int result = (int) (begin ^ (begin >>> 32));
+        result = 31 * result + (int) (end ^ (end >>> 32));
+        result = 31 * result + application.hashCode();
+        result = 31 * result + title.hashCode();
+        result = 31 * result + description.hashCode();
+        return result;
     }
 
-    private boolean isSeparateEvents(Event event) {
-        long timeBetweenEvents = mBegin - event.mEnd;
-        if (timeBetweenEvents < 0) {
-            timeBetweenEvents = event.mBegin - mEnd;
-        }
-        return (timeBetweenEvents > SEPARATE_EVENT);
+    public long getBegin() {
+        return begin;
     }
 
-    private long getDuration() {
-        return mEnd - mBegin;
+    public void setBegin(long begin) {
+        this.begin = begin;
     }
 
-    private Event getLastEvent() {
-        if (ContextCompat.checkSelfPermission(mContext,
-                Manifest.permission.READ_CALENDAR)
-                != PackageManager.PERMISSION_GRANTED) {
-            return null;
-        }
-        Event ret = null;
-
-        Cursor cur;
-        ContentResolver cr = mContext.getContentResolver();
-        // Specify the date range you want to search for recurring
-        // event instances
-        Calendar beginTime = Calendar.getInstance();
-        beginTime.add(Calendar.HOUR, -24); // yesterday
-        long startMillis = beginTime.getTimeInMillis();
-        Calendar endTime = Calendar.getInstance();
-        long endMillis = endTime.getTimeInMillis();
-        // Construct the query with the desired date range.
-        Uri uri = Events.CONTENT_URI;
-        String selection = "((" + Events.CALENDAR_ID + " = ? ) AND ("
-                + Events.DTSTART + " BETWEEN ? AND ? ) AND ("
-                + Events.TITLE + " = ? ) AND ("
-                + Events.DESCRIPTION + " = ?))";
-        String[] selectionArgs = new String[]{String.valueOf(mCalendarId),
-                String.valueOf(startMillis), String.valueOf(endMillis),
-                mTitle, mDescription,};
-        // Submit the query
-        cur = cr.query(uri,
-                EVENT_PROJECTION,
-                selection,
-                selectionArgs,
-                Events.DTSTART + " DESC");
-        if (cur.moveToFirst()) {
-            long id = cur.getLong(EVENT_PROJECTION_ID_INDEX);
-            String title = cur.getString(EVENT_PROJECTION_TITLE_INDEX);
-            String description = cur.getString(EVENT_PROJECTION_DESCRIPTION_INDEX);
-            long begin = Long.parseLong(cur.getString(EVENT_PROJECTION_BEGIN_INDEX));
-            long end = Long.parseLong(cur.getString(EVENT_PROJECTION_END_INDEX));
-            ret = new Event(id, title, description, begin, end);
-        }
-        cur.close();
-        return ret;
+    public long getEnd() {
+        return end;
     }
 
-    public void add() {
-        if (ContextCompat.checkSelfPermission(mContext,
-                Manifest.permission.WRITE_CALENDAR)
-                != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        Event last = getLastEvent();
-        if (last != null) {
-            boolean zeroLengthEvent = last.isZeroLengthEvent();
-            boolean separateEvents = last.isSeparateEvents(this);
-            if (!separateEvents) {
-                if (zeroLengthEvent) {
-                    Log.i(mTag, "No need to add new event because last event did not finish.");
-                    return;
-                } else {
-                    Log.i(mTag, "Reopen last event in order to merge listening block.");
-                    last.setEnd(last.mBegin);
-                    return;
-                }
-            }
-        }
-        long startMillis;
-        long endMillis;
-        Calendar beginTime = Calendar.getInstance();
-        startMillis = beginTime.getTimeInMillis();
-        Calendar endTime = Calendar.getInstance();
-        endMillis = endTime.getTimeInMillis();
-
-        ContentResolver cr = mContext.getContentResolver();
-        ContentValues values = new ContentValues();
-        values.put(Events.DTSTART, startMillis);
-        values.put(Events.DTEND, endMillis);
-        String tz = TimeZone.getDefault().getID();
-        values.put(Events.EVENT_TIMEZONE, tz);
-        values.put(Events.TITLE, mTitle);
-        values.put(Events.DESCRIPTION, mDescription);
-        values.put(Events.CALENDAR_ID, mCalendarId);
-        Uri uri = cr.insert(Events.CONTENT_URI, values);
-
-        // get the event ID that is the last element in the Uri
-        mId = Long.parseLong(uri.getLastPathSegment());
+    public void setEnd(long end) {
+        this.end = end;
     }
 
-    public void updateEndTime() {
-        Event last = getLastEvent();
-        if (last == null || !last.isZeroLengthEvent()) {
-            // nothing to update
-            Log.i(mTag, "No event to update end time.");
-            return;
-        }
-
-        long endTime = Calendar.getInstance().getTimeInMillis();
-        last.setEnd(endTime);
-        if (last.getDuration() < MINIMAL_LISTENING_TIME) {
-            last.delete();
-            Log.i(mTag, "Less than a minute of play gets deleted.");
-            return;
-        }
-        ContentResolver cr = mContext.getContentResolver();
-        ContentValues values = new ContentValues();
-        Uri updateUri;
-        // The new title for the event
-        values.put(Events.DTEND, endTime);
-        updateUri = ContentUris.withAppendedId(Events.CONTENT_URI, last.mId);
-        int rows = cr.update(updateUri, values, null, null);
-        Log.d(mTag, "Rows updated: " + rows);
+    public long getId() {
+        return id;
     }
 
-    private void delete() {
-        ContentResolver cr = mContext.getContentResolver();
-        Uri deleteUri;
-        deleteUri = ContentUris.withAppendedId(Events.CONTENT_URI, mId);
-        int rows = cr.delete(deleteUri, null, null);
-        Log.d(mTag, "Rows deleted: " + rows);
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getApplication() {
+        return application;
+    }
+
+    public void setApplication(String application) {
+        this.application = application;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

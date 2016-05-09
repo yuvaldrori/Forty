@@ -3,7 +3,6 @@ package me.drori.forty;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 
-import java.text.Format;
 import java.text.MessageFormat;
 
 class PocketCasts {
@@ -31,13 +30,13 @@ class PocketCasts {
     public void run() {
         String title = MessageFormat.format("{}, {}", mEpisode, mPodcast);
         String description = MessageFormat.format("{}\n{}", mPodcast, mEpisode);
-        Event event = new Event(title, mEpisode);
+        Calendar calendar = new Calendar(title, mEpisode);
         switch (mFlags) {
             case PLAY:
-                event.add();
+                calendar.add();
                 break;
             case PAUSE:
-                event.updateEndTime();
+                calendar.close();
         }
     }
 }
