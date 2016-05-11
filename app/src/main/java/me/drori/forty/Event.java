@@ -4,6 +4,8 @@ import java.text.MessageFormat;
 
 public class Event {
 
+    public static final long NEW_EVENT = -1;
+
     private long begin;
     private long end;
     private long id;
@@ -23,9 +25,9 @@ public class Event {
     public Event(Notification notification) {
         this.begin = notification.getTime();
         this.end = notification.getTime();
-        this.id = -1;
+        this.id = NEW_EVENT;
         this.application = notification.getApplication();
-        this.title = MessageFormat.format("{0} {1}", notification.getText(), notification.getTitle());
+        this.title = MessageFormat.format("{0}, {1}", notification.getText(), notification.getTitle());
         this.description = MessageFormat.format("{0}\n{1}", this.title, this.application);
     }
 

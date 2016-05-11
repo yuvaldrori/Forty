@@ -30,13 +30,13 @@ class PocketCasts {
     public void run() {
         String title = MessageFormat.format("{}, {}", mEpisode, mPodcast);
         String description = MessageFormat.format("{}\n{}", mPodcast, mEpisode);
-        Calendar calendar = new Calendar(title, mEpisode);
+        CalendarOld calendarOld = new CalendarOld(title, mEpisode);
         switch (mFlags) {
             case PLAY:
-                calendar.add();
+                calendarOld.add();
                 break;
             case PAUSE:
-                calendar.close();
+                calendarOld.close();
         }
     }
 }

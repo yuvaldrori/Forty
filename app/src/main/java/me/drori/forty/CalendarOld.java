@@ -16,7 +16,7 @@ import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.TimeZone;
 
-class Calendar {
+class CalendarOld {
 
     private static final String[] EVENT_PROJECTION = new String[]{
             Events._ID,           // 0
@@ -44,7 +44,7 @@ class Calendar {
     private static final long SEPARATE_EVENT = MINIMAL_LISTENING_TIME;
     private static final long ZERO_LENGTH_EVENT = 1 * 1000; // one second in ms
 
-    private Calendar(long id, String title, String description, long begin, long end) {
+    private CalendarOld(long id, String title, String description, long begin, long end) {
         mContext = FortyNotificationListenerService.getContext();
         mTag = FortyNotificationListenerService.getTag();
 
@@ -61,7 +61,7 @@ class Calendar {
                 + " end: " + end);
     }
 
-    public Calendar(String title, String description) {
+    public CalendarOld(String title, String description) {
         mContext = FortyNotificationListenerService.getContext();
         mTag = FortyNotificationListenerService.getTag();
 
@@ -85,15 +85,15 @@ class Calendar {
         return (getDuration() < MINIMAL_LISTENING_TIME);
     }
 
-    private boolean isSeparateEvents(Calendar calendar) {
-        long timeBetweenEvents = mBegin - calendar.mEnd;
+    private boolean isSeparateEvents(CalendarOld calendarOld) {
+        long timeBetweenEvents = mBegin - calendarOld.mEnd;
         if (timeBetweenEvents < 0) {
-            timeBetweenEvents = calendar.mBegin - mEnd;
+            timeBetweenEvents = calendarOld.mBegin - mEnd;
         }
         return (timeBetweenEvents > SEPARATE_EVENT);
     }
 
-    private Calendar getLastEvent() throws SecurityException {
+    private CalendarOld getLastEvent() throws SecurityException {
         if (ContextCompat.checkSelfPermission(mContext,
                 Manifest.permission.READ_CALENDAR)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -128,7 +128,7 @@ class Calendar {
             long begin = Long.parseLong(cur.getString(EVENT_PROJECTION_BEGIN_INDEX));
             long end = Long.parseLong(cur.getString(EVENT_PROJECTION_END_INDEX));
             cur.close();
-            return new Calendar(id, title, description, begin, end);
+            return new CalendarOld(id, title, description, begin, end);
         }
         return null;
     }
@@ -155,7 +155,7 @@ class Calendar {
     }
 
     public void add() {
-        Calendar last = null;
+        CalendarOld last = null;
         try {
             last = getLastEvent();
         } catch (SecurityException e) {
@@ -216,7 +216,7 @@ class Calendar {
     }
 
     public void close() {
-        Calendar last = null;
+        CalendarOld last = null;
         try {
             last = getLastEvent();
         } catch (SecurityException e) {
