@@ -54,9 +54,10 @@ public class FortyUnitTest {
         String eventTitle = MessageFormat.format("{0}, {1}", text, title);
         String description = MessageFormat.format("{0}\n{1}", eventTitle, app);
         Event event = new Event(0, 0, 1, eventTitle, description);
+        Event newEvent = new Event(0, 1, 1, eventTitle, description);
         Notification notification = new Notification(app, title, text, Notification.actions.STOP, 1);
         Logic logic = new Logic(event, notification);
-        assertEquals(logic.getEvents().get(0).getEnd(), 1);
+        assertEquals(logic.getEvents().get(0), newEvent);
     }
 
     @Test
@@ -67,9 +68,10 @@ public class FortyUnitTest {
         String eventTitle = MessageFormat.format("{0}, {1}", text, title);
         String description = MessageFormat.format("{0}\n{1}", eventTitle, app);
         Event event = new Event(0, 1, 1, eventTitle, description);
-        Notification notification = new Notification(app, title, text, Notification.actions.START, 3);
+        Event newEvent = new Event(0, 0, 1, eventTitle, description);
+        Notification notification = new Notification(app, title, text, Notification.actions.START, Logic.SEPARATE_EVENT - 1);
         Logic logic = new Logic(event, notification);
-        assertEquals(logic.getEvents().get(0).getEnd(), 0);
+        assertEquals(logic.getEvents().get(0), newEvent);
     }
 
     @Test
@@ -80,6 +82,22 @@ public class FortyUnitTest {
         String eventTitle = MessageFormat.format("{0}, {1}", text, title);
         String description = MessageFormat.format("{0}\n{1}", eventTitle, app);
         Event event = new Event(0, 1, 1, eventTitle, description);
+        long newTime = Logic.SEPARATE_EVENT + 1;
+        Event newEvent = new Event(newTime, newTime, Event.NEW_EVENT, eventTitle, description);
+        Notification notification = new Notification(app, title, text, Notification.actions.START, newTime);
+        Logic logic = new Logic(event, notification);
+        assertEquals(logic.getEvents().get(0), newEvent);
+    }
+
+    @Test
+    public void test_start_unknown_application() throws Exception {
+        String app = "app1";
+        String title = "podcast 1";
+        String text = "episode 1";
+        String eventTitle = MessageFormat.format("{0}, {1}", text, title);
+        String unknownDescription = MessageFormat.format("{0}", eventTitle);
+        String description = MessageFormat.format("{0}\n{1}", eventTitle, app);
+        Event event = new Event(0, 1, 1, eventTitle, unknownDescription);
         long newTime = Logic.SEPARATE_EVENT + 1;
         Event newEvent = new Event(newTime, newTime, Event.NEW_EVENT, eventTitle, description);
         Notification notification = new Notification(app, title, text, Notification.actions.START, newTime);
@@ -107,6 +125,40 @@ public class FortyUnitTest {
         event1.setEnd(2);
         assertEquals(events.get(0), event1);
         assertEquals(events.get(1), event2);
+    }
+
+    @Test
+    public void test_multiple_start_notifications() throws Exception {
+        String app = "app1";
+        String title = "podcast 1";
+        String text = "episode 1";
+        String eventTitle = MessageFormat.format("{0}, {1}", text, title);
+        String description = MessageFormat.format("{0}\n{1}", eventTitle, app);
+        Event event = new Event(3, 3, Event.NEW_EVENT, eventTitle, description);
+        Notification notification1 = new Notification(app, title, text, Notification.actions.START, 3);
+        Notification notification2 = new Notification(app, title, text, Notification.actions.START, 5);
+        Logic logic1 = new Logic(null, notification1);
+        assertEquals(logic1.getEvents().get(0), event);
+        Logic logic2 = new Logic(event, notification2);
+        assertEquals(logic2.getEvents().size(), 0);
+    }
+
+    @Test
+    public void test_multiple_stop_notifications() throws Exception {
+        String app = "app1";
+        String title = "podcast 1";
+        String text = "episode 1";
+        String eventTitle = MessageFormat.format("{0}, {1}", text, title);
+        String description = MessageFormat.format("{0}\n{1}", eventTitle, app);
+        long stopTime = 7;
+        Event event1 = new Event(3, 3, Event.NEW_EVENT, eventTitle, description);
+        Event event2 = new Event(3, stopTime, Event.NEW_EVENT, eventTitle, description);
+        Notification notification1 = new Notification(app, title, text, Notification.actions.STOP, stopTime);
+        Notification notification2 = new Notification(app, title, text, Notification.actions.STOP, stopTime + 9);
+        Logic logic1 = new Logic(event1, notification1);
+        assertEquals(logic1.getEvents().get(0), event2);
+        Logic logic2 = new Logic(event2, notification2);
+        assertEquals(logic2.getEvents().size(), 0);
     }
 
 }

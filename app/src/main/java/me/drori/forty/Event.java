@@ -5,6 +5,7 @@ import java.text.MessageFormat;
 public class Event {
 
     public static final long NEW_EVENT = -1;
+    public static final String UNKNOWN_APPLICATION = "Unknown application";
 
     private long begin;
     private long end;
@@ -19,7 +20,13 @@ public class Event {
         this.id = id;
         this.title = title;
         this.description = description;
-        this.application = description.split("\n")[1];
+        String[] lines = description.split("\n");
+        if (lines.length > 1) {
+            this.application = description.split("\n")[1];
+        } else {
+            this.application = UNKNOWN_APPLICATION;
+        }
+
     }
 
     public Event(Notification notification) {

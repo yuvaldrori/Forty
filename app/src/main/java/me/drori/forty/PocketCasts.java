@@ -3,40 +3,42 @@ package me.drori.forty;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 
-import java.text.MessageFormat;
-
 class PocketCasts {
 
     public static final String PKG_NAME = "au.com.shiftyjelly.pocketcasts";
     private static final int PLAY = 362;
     private static final int PAUSE = 264;
 
-    private final int mFlags;
-    private String mPodcast;
-    private String mEpisode;
+    private final int flags;
+    private String podcast;
+    private String episode;
+    private final long time;
 
     public PocketCasts(StatusBarNotification sbn) {
         // play or pause?
-        mFlags = sbn.getNotification().flags;
+        this.flags = sbn.getNotification().flags;
 
         // details
         Bundle extras = sbn.getNotification().extras;
         if (extras != null) {
-            mPodcast = extras.getString("android.title");
-            mEpisode = extras.getString("android.text");
+            this.podcast = extras.getString("android.title");
+            this.episode = extras.getString("android.text");
         }
+
+        // notification time
+        this.time = sbn.getPostTime();
     }
 
-    public void run() {
-        String title = MessageFormat.format("{}, {}", mEpisode, mPodcast);
-        String description = MessageFormat.format("{}\n{}", mPodcast, mEpisode);
-        CalendarOld calendarOld = new CalendarOld(title, mEpisode);
-        switch (mFlags) {
+    public Notification getNotification() {
+        Notification.actions action = null;
+        switch (flags) {
             case PLAY:
-                calendarOld.add();
+                action = Notification.actions.START;
                 break;
             case PAUSE:
-                calendarOld.close();
+                action = Notification.actions.STOP;
+                break;
         }
+        return new Notification(PKG_NAME, podcast, episode, action, time);
     }
 }

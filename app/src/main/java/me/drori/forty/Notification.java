@@ -2,21 +2,21 @@ package me.drori.forty;
 
 public class Notification {
 
-    public static enum actions {
+    public enum actions {
         START, STOP
     }
 
     private String application;
     private String title;
     private String text;
-    private actions actions;
+    private actions action;
     private long time;
 
-    public Notification(String application, String title, String text, Notification.actions actions, long time) {
+    public Notification(String application, String title, String text, Notification.actions action, long time) {
         this.application = application;
         this.title = title;
         this.text = text;
-        this.actions = actions;
+        this.action = action;
         this.time = time;
     }
 
@@ -44,12 +44,12 @@ public class Notification {
         this.text = text;
     }
 
-    public Notification.actions getActions() {
-        return actions;
+    public Notification.actions getAction() {
+        return action;
     }
 
-    public void setActions(Notification.actions actions) {
-        this.actions = actions;
+    public void setAction(Notification.actions action) {
+        this.action = action;
     }
 
     public long getTime() {
