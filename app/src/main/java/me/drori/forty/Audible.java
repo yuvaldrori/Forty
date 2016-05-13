@@ -3,30 +3,26 @@ package me.drori.forty;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 
-class PocketCasts {
+class Audible {
 
-    public static final String PKG_NAME = "au.com.shiftyjelly.pocketcasts";
-    private static final int PLAY = 362;
-    private static final int PAUSE = 264;
+    public static final String PKG_NAME = "com.audible.application";
+    private static final int PLAY = 2130837962;
+    private static final int PAUSE = 2130837961;
 
-    private final int flags;
+    private int flags = 0;
     private String podcast;
     private String episode;
     private final long time;
-    private final android.app.Notification.Action[] actions;
 
-    public PocketCasts(StatusBarNotification sbn) {
-        // actions
-        actions = sbn.getNotification().actions;
-
-        // play or pause?
-        this.flags = sbn.getNotification().flags;
-
+    public Audible(StatusBarNotification sbn) {
+        android.app.Notification notification = sbn.getNotification();
         // details
-        Bundle extras = sbn.getNotification().extras;
+        Bundle extras = notification.extras;
         if (extras != null) {
             this.podcast = extras.getString("android.title");
             this.episode = extras.getString("android.text");
+            // play or pause?
+            this.flags = extras.getInt("android.icon");
         }
 
         // notification time
@@ -35,10 +31,6 @@ class PocketCasts {
 
     public Notification getNotification() {
         Notification.actions action = null;
-        // ignore downloads notifications
-        if (actions == null || actions.length != 3) {
-            return null;
-        }
         switch (flags) {
             case PLAY:
                 action = Notification.actions.START;

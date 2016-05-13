@@ -1,6 +1,5 @@
 package me.drori.forty;
 
-import android.app.Notification.Action;
 import android.content.Context;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
@@ -43,7 +42,8 @@ public class FortyNotificationListenerService extends NotificationListenerServic
 
         if (BuildConfig.DEBUG) {
             Log.d(TAG, sbn.toString());
-            Bundle extras = sbn.getNotification().extras;
+            android.app.Notification notification = sbn.getNotification();
+            Bundle extras = notification.extras;
             if (extras != null) {
                 Log.d(TAG, extras.toString());
             }
@@ -53,11 +53,7 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         Event event;
         switch (pkgName) {
             case PocketCasts.PKG_NAME:
-                // ignore downloads notifications
-                Action[] actions = sbn.getNotification().actions;
-                if (actions != null && actions.length == 3) {
-                    notification = new PocketCasts(sbn).getNotification();
-                }
+                notification = new PocketCasts(sbn).getNotification();
                 break;
         }
         if (notification == null) {
