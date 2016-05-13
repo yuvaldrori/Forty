@@ -14,7 +14,7 @@
 
         <service
             android:name=".FortyNotificationListenerService"
-            android:label="@string/service_name"
+            android:label="@string/app_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
