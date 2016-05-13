@@ -1,6 +1,6 @@
 {
   "name": "Forty",
   "tagline": "At forty you start to forget",
-  "body": "# Forty\r\n\r\nThis applications syncs podcasts listening history from [PocketCasts](http://www.shiftyjelly.com/pocketcasts) to your calendar.\r\n\r\n## Prerequisites: \r\n- A writable calendar \"Forty\".\r\n- Enable notification access for the \"Forty\" app as described [here](https://support.google.com/nexus/answer/6111294) under \"Notification access\".\r\n\r\n## Help needed:\r\n- Reading notification contentView to get book name and episode from the Audible app.\r\n- Settings screen to allow setting your own calnedar and to help enable the right permissions.\r\n",
+  "body": "# Forty\r\n\r\nThis applications syncs podcasts listening history from [PocketCasts](http://www.shiftyjelly.com/pocketcasts) to your calendar.\r\n\r\n## Prerequisites: \r\n- A writable calendar \"Forty\".\r\n- Enable notification access for the \"Forty\" app as described [here](https://support.google.com/nexus/answer/6111294) under \"Notification access\".\r\n\r\n## Help needed:\r\n- Reading notification contentView to get book name and episode from the Audible app.\r\n- Settings screen to allow setting your own calendar and to help enable the right permissions.\r\n",
   "note": "Don't delete this file! It's used internally to help with page regeneration."
 }
