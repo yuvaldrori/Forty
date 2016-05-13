@@ -8,4 +8,4 @@ This applications syncs podcasts listening history from [PocketCasts](http://www
 
 ## Help needed:
 - Reading notification contentView to get book name and episode from the Audible app.
-- Settings screen to allow setting your own calnedar and to help enable the right permissions.
+- Settings screen to allow setting your own calendar and to help enable the right permissions.
