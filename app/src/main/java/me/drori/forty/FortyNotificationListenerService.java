@@ -48,7 +48,7 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         if (!hasPermissions()) {
             return;
         }
-        Calendar calendar = new Calendar(CALENDAR_NAME);
+
         String pkgName = sbn.getPackageName();
 
         if (BuildConfig.DEBUG) {
@@ -70,6 +70,7 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         if (notification == null) {
             return;
         }
+        Calendar calendar = new Calendar(CALENDAR_NAME);
         event = calendar.getEvent();
         Logic logic = new Logic(event, notification);
         List<Event> events = logic.getEvents();
