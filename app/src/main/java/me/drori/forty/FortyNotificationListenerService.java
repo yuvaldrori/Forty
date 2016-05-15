@@ -75,7 +75,7 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         Logic logic = new Logic(event, notification);
         List<Event> events = logic.getEvents();
         for (Event e : events) {
-            if (event.getId() == e.getId()) {
+            if (event != null && event.getId() == e.getId()) {
                 calendar.updateEvent(e);
             } else {
                 calendar.addEvent(e);

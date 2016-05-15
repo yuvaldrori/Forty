@@ -50,7 +50,7 @@ class Logic {
                 }
             }
         } else { // stop event
-            if (notification.getAction().equals(Notification.actions.STOP) && event.getBegin() == event.getEnd()) {
+            if (notification.getAction().equals(Notification.actions.STOP) && event != null && event.getBegin() == event.getEnd()) {
                 event.setEnd(notification.getTime());
                 events.add(event);
                 return events;
