@@ -9,7 +9,6 @@ class PocketCasts {
     private static final int PLAY = 362;
     private static final int PAUSE = 264;
 
-    private final int flags;
     private String podcast;
     private String episode;
     private final long time;
@@ -18,9 +17,6 @@ class PocketCasts {
     public PocketCasts(StatusBarNotification sbn) {
         // actions
         actions = sbn.getNotification().actions;
-
-        // play or pause?
-        this.flags = sbn.getNotification().flags;
 
         // details
         Bundle extras = sbn.getNotification().extras;
@@ -34,19 +30,11 @@ class PocketCasts {
     }
 
     public Notification getNotification() {
-        Notification.actions action = null;
         // ignore downloads notifications
         if (actions == null || actions.length != 3) {
             return null;
         }
-        switch (flags) {
-            case PLAY:
-                action = Notification.actions.START;
-                break;
-            case PAUSE:
-                action = Notification.actions.STOP;
-                break;
-        }
-        return new Notification(PKG_NAME, podcast, episode, action, time);
+
+        return new Notification(PKG_NAME, podcast, episode, time);
     }
 }

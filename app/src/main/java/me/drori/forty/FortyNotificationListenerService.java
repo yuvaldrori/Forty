@@ -17,6 +17,7 @@ public class FortyNotificationListenerService extends NotificationListenerServic
     private static final String CALENDAR_NAME = "Forty";
 
     private static Context context;
+    private Calendar calendar = null;
 
     public static Context getContext() {
         return FortyNotificationListenerService.context;
@@ -35,18 +36,18 @@ public class FortyNotificationListenerService extends NotificationListenerServic
     }
 
     @Override
-    public void onNotificationPosted(StatusBarNotification sbn) {
-        act(sbn);
+    public void onNotificationRemoved(StatusBarNotification statusBarNotification) {
+
     }
 
     @Override
-    public void onNotificationRemoved(StatusBarNotification sbn) {
-        act(sbn);
-    }
-
-    private void act(StatusBarNotification sbn) {
+    public void onNotificationPosted(StatusBarNotification sbn) {
         if (!hasPermissions()) {
             return;
+        }
+
+        if (this.calendar == null) {
+            this.calendar = new Calendar(CALENDAR_NAME);
         }
 
         String pkgName = sbn.getPackageName();
@@ -61,7 +62,7 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         }
 
         Notification notification = null;
-        Event event;
+        List<Event> events;
         switch (pkgName) {
             case PocketCasts.PKG_NAME:
                 notification = new PocketCasts(sbn).getNotification();
@@ -70,16 +71,11 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         if (notification == null) {
             return;
         }
-        Calendar calendar = new Calendar(CALENDAR_NAME);
-        event = calendar.getEvent();
-        Logic logic = new Logic(event, notification);
-        List<Event> events = logic.getEvents();
-        for (Event e : events) {
-            if (event != null && event.getId() == e.getId()) {
-                calendar.updateEvent(e);
-            } else {
-                calendar.addEvent(e);
-            }
+        events = this.calendar.getEvents();
+        Logic logic = new Logic(events, notification);
+        Event event = logic.getEvent();
+        if (event != null) {
+            calendar.addEvent(event);
         }
     }
 }
