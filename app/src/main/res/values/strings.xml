@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Forty</string>
+    <string name="fix_permissions">Fix permissions</string>
 </resources>
