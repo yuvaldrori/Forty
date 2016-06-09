@@ -6,8 +6,6 @@ import android.service.notification.StatusBarNotification;
 class PocketCasts {
 
     public static final String PKG_NAME = "au.com.shiftyjelly.pocketcasts";
-    private static final int PLAY = 362;
-    private static final int PAUSE = 264;
 
     private String podcast;
     private String episode;

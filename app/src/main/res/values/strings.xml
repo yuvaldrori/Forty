@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Forty</string>
-    <string name="fix_permissions">Fix permissions</string>
+    <string name="calendar_settings_title">Calendar</string>
+    <string name="calendar_settings_summary">%s</string>
+    <string name="calendar_settings_summary_none">No calendar selected!</string>
+    <string name="calendar_settings_dialog_title">Pick a calendar.</string>
 </resources>

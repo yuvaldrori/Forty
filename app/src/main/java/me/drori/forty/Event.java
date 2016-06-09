@@ -4,8 +4,8 @@ import java.text.MessageFormat;
 
 public class Event {
 
-    public static final long NEW_EVENT = -1;
-    public static final String UNKNOWN_APPLICATION = "Unknown application";
+    private static final long NEW_EVENT = -1;
+    private static final String UNKNOWN_APPLICATION = "Unknown application";
 
     private long begin;
     private long end;

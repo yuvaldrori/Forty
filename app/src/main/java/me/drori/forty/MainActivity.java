@@ -3,32 +3,52 @@ package me.drori.forty;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.util.Pair;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    public final static String CALENDAR_PREFERENCE_LIST = "list_calendar";
     private final static int FORTY_PERMISSIONS_REQUEST_CODE = 42;
-    private Button permissionButton;
+    private final static String PREFERENCE_FRAGMENT_TAG = "preference_fragment_tag";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate(null);
         setContentView(R.layout.activity_main);
-        permissionButton = (Button) findViewById(R.id.buttonPermission);
+        if (!hasPermission()) {
+            askPermissions();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        checkPermission();
+        if (hasPermission()) {
+            setScreen(true);
+        } else {
+            setScreen(false);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        removeFragment();
     }
 
     @Override
@@ -39,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
             case FORTY_PERMISSIONS_REQUEST_CODE:
                 for (int result : grantResults) {
                     if (result != PackageManager.PERMISSION_GRANTED) {
-                        return;
+                        askPermissions();
                     }
                 }
 
@@ -47,9 +67,15 @@ public class MainActivity extends AppCompatActivity {
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
-        setPermissionButton(false);
         if (!hasNotificationAccess()) {
             startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+        }
+    }
+
+    private void removeFragment() {
+        Fragment preferenceFragment = getSupportFragmentManager().findFragmentByTag(PREFERENCE_FRAGMENT_TAG);
+        if (preferenceFragment != null) {
+            getSupportFragmentManager().beginTransaction().remove(preferenceFragment).commit();
         }
     }
 
@@ -62,10 +88,6 @@ public class MainActivity extends AppCompatActivity {
         return !(enabledNotificationListeners == null || !enabledNotificationListeners.contains(packageName));
     }
 
-    public void permissionButtonOnClick(View view) {
-        askPermissions();
-    }
-
     private void askPermissions() {
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.READ_CALENDAR,
@@ -74,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 FORTY_PERMISSIONS_REQUEST_CODE);
     }
 
-    private void checkPermission() {
+    private boolean hasPermission() {
         int permissionCheckCalendarWrite = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_CALENDAR);
         int permissionCheckCalendarRead = ContextCompat.checkSelfPermission(this,
@@ -85,20 +107,57 @@ public class MainActivity extends AppCompatActivity {
                 permissionCheckCalendarWrite != PackageManager.PERMISSION_GRANTED ||
                 permissionCheckGetAccount != PackageManager.PERMISSION_GRANTED ||
                 !hasNotificationAccess()) {
-            setPermissionButton(false);
+            return false ;
         } else {
-            setPermissionButton(true);
+            return true;
         }
     }
 
-    private void setPermissionButton(boolean granted) {
+    private void setScreen(boolean granted) {
         if (granted) {
-            permissionButton.setVisibility(View.GONE);
+            getFragmentManager().beginTransaction()
+                    .add(R.id.main, new SettingsFragment(), PREFERENCE_FRAGMENT_TAG)
+                    .commit();
         } else {
-            permissionButton.setVisibility(View.VISIBLE);
-            permissionButton.setBackgroundColor(Color.RED);
-            String fix_permissions = getString(R.string.fix_permissions);
-            permissionButton.setText(fix_permissions);
+            removeFragment();
+        }
+    }
+
+    public static class SettingsFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(null);
+            // Load the preferences from an XML resource
+            addPreferencesFromResource(R.xml.preferences);
+
+            final ListPreference listPreference = (ListPreference) findPreference(CALENDAR_PREFERENCE_LIST);
+            Calendar calendar = new Calendar();
+            List<Pair<String, String>> calendars = calendar.getCalendars();
+            List<String> calendar_names = new ArrayList<>();
+            List<String> calendar_ids = new ArrayList<>();
+            for (Pair<String, String> tup : calendars) {
+                calendar_names.add(tup.first);
+                calendar_ids.add(tup.second);
+            }
+            final CharSequence[] entries = calendar_names.toArray(new CharSequence[calendar_names.size()]);
+            final CharSequence[] values = calendar_ids.toArray(new CharSequence[calendar_ids.size()]);
+            listPreference.setEntries(entries);
+            listPreference.setEntryValues(values);
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String calendar_id = sharedPref.getString(CALENDAR_PREFERENCE_LIST, "");
+            if (calendar_ids.contains(calendar_id)) {
+                listPreference.setDefaultValue(calendar_id);
+            } else {
+                listPreference.setDefaultValue(calendar_ids.get(0));
+                listPreference.setSummary(R.string.calendar_settings_summary_none);
+            }
+            listPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object o) {
+                    listPreference.setSummary(R.string.calendar_settings_summary);
+                    return true;
+                }
+            });
         }
     }
 }

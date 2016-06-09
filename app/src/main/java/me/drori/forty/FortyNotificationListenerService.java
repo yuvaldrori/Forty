@@ -2,8 +2,10 @@ package me.drori.forty;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.support.v4.content.ContextCompat;
@@ -11,10 +13,10 @@ import android.util.Log;
 
 import java.util.List;
 
-public class FortyNotificationListenerService extends NotificationListenerService {
+public class FortyNotificationListenerService extends NotificationListenerService
+        implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     public static final String TAG = "FORTY";
-    private static final String CALENDAR_NAME = "Forty";
 
     private static Context context;
     private Calendar calendar = null;
@@ -27,12 +29,20 @@ public class FortyNotificationListenerService extends NotificationListenerServic
     public void onCreate() {
         super.onCreate();
         context = this;
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
     }
 
     private boolean hasPermissions() {
         return (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED)
                 && (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED)
                 && (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) == PackageManager.PERMISSION_GRANTED);
+    }
+
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+                                          String key) {
+        if (key.equals(MainActivity.CALENDAR_PREFERENCE_LIST)) {
+            this.calendar = null;
+        }
     }
 
     @Override
@@ -47,7 +57,7 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         }
 
         if (this.calendar == null) {
-            this.calendar = new Calendar(CALENDAR_NAME);
+            this.calendar = new Calendar();
         }
 
         String pkgName = sbn.getPackageName();

@@ -5,22 +5,23 @@ import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.provider.CalendarContract;
+import android.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.TimeZone;
 
 class Calendar {
 
     private static final long NO_CALENDAR = -1;
 
-    private final String name;
     private final Context context;
-    private final long calendarId;
+    private long calendarId = NO_CALENDAR;
 
     //region finding calendar:
     // Projection array. Creating indices for this array instead of doing
@@ -53,10 +54,12 @@ class Calendar {
     //endregion
 
 
-    public Calendar(String name) {
-        this.name = name;
-        this.context = FortyNotificationListenerService.getContext();
-        this.calendarId = getCalendarId();
+    public Calendar() {
+        context = FortyNotificationListenerService.getContext();
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        if (sharedPref != null) {
+            this.calendarId = Long.parseLong(sharedPref.getString(MainActivity.CALENDAR_PREFERENCE_LIST, String.valueOf(NO_CALENDAR)));
+        }
     }
 
     private List<String> getAccounts() {
@@ -68,28 +71,28 @@ class Calendar {
         return accountsList;
     }
 
-    private long getCalendarId() {
-        long id = NO_CALENDAR;
+    public List<Pair<String, String>> getCalendars() {
+        List<Pair<String, String>> calendars = new ArrayList<>();
         Cursor cur = null;
         ContentResolver cr = context.getContentResolver();
         Uri uri = CalendarContract.Calendars.CONTENT_URI;
         for (String account : getAccounts()) {
-            String selection = "((" + CalendarContract.Calendars.ACCOUNT_NAME + " = ?))";
-            String[] selectionArgs = new String[]{account};
+            String selection = "((" + CalendarContract.Calendars.ACCOUNT_NAME + " = ?) AND ("
+            + CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL + " = ? ))";
+            String[] selectionArgs = new String[]{account, Integer.toString(CalendarContract.Calendars.CAL_ACCESS_OWNER)};
             try {
                 cur = cr.query(uri, CALENDAR_PROJECTION, selection, selectionArgs, null);
 
                 while (cur.moveToNext()) {
-                    long calID;
+                    String calID;
                     String displayName;
 
                     // Get the field values
-                    calID = cur.getLong(CALENDAR_PROJECTION_ID_INDEX);
+                    calID = String.valueOf(cur.getLong(CALENDAR_PROJECTION_ID_INDEX));
                     displayName = cur.getString(CALENDAR_PROJECTION_DISPLAY_NAME_INDEX);
-
-                    if (Objects.equals(displayName, name)) {
-                        id = calID;
-                        break;
+                    Pair<String, String> tup = Pair.create(displayName, calID);
+                    if (!calendars.contains(tup)) {
+                        calendars.add(tup);
                     }
                 }
             } catch (SecurityException ignored) {
@@ -100,8 +103,7 @@ class Calendar {
                 }
             }
         }
-
-        return id;
+        return calendars;
     }
 
     public void addEvent(Event event) {
