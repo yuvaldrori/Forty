@@ -5,4 +5,5 @@
     <string name="calendar_settings_summary_none">No calendar selected!</string>
     <string name="calendar_settings_dialog_title">Pick a calendar.</string>
     <string name="permissions_button_text">Grant permissions</string>
+    <string name="supported_apps">PocketCasts not installed.</string>
 </resources>

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -18,7 +19,7 @@ import android.os.Bundle;
 import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
-
+import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,10 +44,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (hasPermission()) {
-            setScreen(true);
+        setScreen(hasPermission());
+        TextView textView = (TextView) findViewById(R.id.supported_apps);
+        if (!supportedAppInstalled()) {
+            textView.setVisibility(View.VISIBLE);
         } else {
-            setScreen(false);
+            textView.setVisibility(View.GONE);
         }
     }
 
@@ -82,6 +85,17 @@ public class MainActivity extends AppCompatActivity {
         if (preferenceFragment != null) {
             getSupportFragmentManager().beginTransaction().remove(preferenceFragment).commit();
         }
+    }
+
+    private boolean supportedAppInstalled() {
+        PackageManager packageManager = getPackageManager();
+        List<ApplicationInfo> applications = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
+        for (ApplicationInfo app : applications) {
+            if (app.packageName.equals(PocketCasts.PKG_NAME)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean hasNotificationAccess() {
