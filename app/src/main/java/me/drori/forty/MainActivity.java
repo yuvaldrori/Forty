@@ -16,12 +16,15 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Pair;
+import android.view.View;
+import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final static String FIRST_RUN_PREFERENCE = "first_run";
     public final static String CALENDAR_PREFERENCE_LIST = "list_calendar";
     private final static int FORTY_PERMISSIONS_REQUEST_CODE = 42;
     private final static String PREFERENCE_FRAGMENT_TAG = "preference_fragment_tag";
@@ -30,8 +33,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(null);
         setContentView(R.layout.activity_main);
-        if (!hasPermission()) {
-            askPermissions();
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        if (sharedPref.getBoolean(FIRST_RUN_PREFERENCE, true) && !hasPermission()) {
+            sharedPref.edit().putBoolean(FIRST_RUN_PREFERENCE, false).apply();
+            askPermissions(null);
         }
     }
 
@@ -59,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
             case FORTY_PERMISSIONS_REQUEST_CODE:
                 for (int result : grantResults) {
                     if (result != PackageManager.PERMISSION_GRANTED) {
-                        askPermissions();
+                        askPermissions(null);
                     }
                 }
 
@@ -88,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         return !(enabledNotificationListeners == null || !enabledNotificationListeners.contains(packageName));
     }
 
-    private void askPermissions() {
+    public void askPermissions(View view) {
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.READ_CALENDAR,
                         Manifest.permission.WRITE_CALENDAR,
@@ -103,22 +108,22 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.READ_CALENDAR);
         int permissionCheckGetAccount = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.GET_ACCOUNTS);
-        if (permissionCheckCalendarRead != PackageManager.PERMISSION_GRANTED ||
+        return !(permissionCheckCalendarRead != PackageManager.PERMISSION_GRANTED ||
                 permissionCheckCalendarWrite != PackageManager.PERMISSION_GRANTED ||
                 permissionCheckGetAccount != PackageManager.PERMISSION_GRANTED ||
-                !hasNotificationAccess()) {
-            return false ;
-        } else {
-            return true;
-        }
+                !hasNotificationAccess());
     }
 
     private void setScreen(boolean granted) {
+        Button permissionsButton = (Button)findViewById(R.id.permissions_button);
         if (granted) {
+            permissionsButton.setVisibility(View.GONE);
             getFragmentManager().beginTransaction()
                     .add(R.id.main, new SettingsFragment(), PREFERENCE_FRAGMENT_TAG)
                     .commit();
         } else {
+            permissionsButton.setVisibility(View.VISIBLE);
+            permissionsButton.setText(R.string.permissions_button_text);
             removeFragment();
         }
     }
