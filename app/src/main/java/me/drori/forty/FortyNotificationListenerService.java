@@ -45,13 +45,7 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         }
     }
 
-    @Override
-    public void onNotificationRemoved(StatusBarNotification statusBarNotification) {
-
-    }
-
-    @Override
-    public void onNotificationPosted(StatusBarNotification sbn) {
+    public void run(StatusBarNotification sbn) {
         if (!hasPermissions()) {
             return;
         }
@@ -87,5 +81,15 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         if (event != null) {
             calendar.addEvent(event);
         }
+    }
+
+    @Override
+    public void onNotificationRemoved(StatusBarNotification sbn) {
+        run(sbn);
+    }
+
+    @Override
+    public void onNotificationPosted(StatusBarNotification sbn) {
+        run(sbn);
     }
 }
