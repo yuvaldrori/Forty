@@ -11,12 +11,14 @@ import android.service.notification.StatusBarNotification;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class FortyNotificationListenerService extends NotificationListenerService
         implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     public static final String TAG = "FORTY";
+    public static final List<String> SUPPORTED_APPS = Arrays.asList(PocketCasts.PKG_NAME, AntennaPod.PKG_NAME);
 
     private static Context context;
     private Calendar calendar = null;
@@ -70,6 +72,9 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         switch (pkgName) {
             case PocketCasts.PKG_NAME:
                 notification = new PocketCasts(sbn).getNotification();
+                break;
+            case AntennaPod.PKG_NAME:
+                notification = new AntennaPod(sbn).getNotification();
                 break;
         }
         if (notification == null) {

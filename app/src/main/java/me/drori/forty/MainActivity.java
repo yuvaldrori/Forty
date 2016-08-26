@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         PackageManager packageManager = getPackageManager();
         List<ApplicationInfo> applications = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
         for (ApplicationInfo app : applications) {
-            if (app.packageName.equals(PocketCasts.PKG_NAME)) {
+            if (FortyNotificationListenerService.SUPPORTED_APPS.contains(app.packageName)) {
                 return true;
             }
         }
