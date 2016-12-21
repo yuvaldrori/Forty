@@ -20,6 +20,7 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.net.Uri;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     public final static String CALENDAR_PREFERENCE_LIST = "list_calendar";
     private final static int FORTY_PERMISSIONS_REQUEST_CODE = 42;
     private final static String PREFERENCE_FRAGMENT_TAG = "preference_fragment_tag";
+    private final static String PRIVACY_POLICY_ADDRESS = "https://github.com/yuvaldrori/Forty/blob/master/PRIVACY.md";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
-        if (!hasNotificationAccess()) {
+        if (notificationAccess()) {
             startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
         }
     }
@@ -98,13 +100,13 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    private boolean hasNotificationAccess() {
+    private boolean notificationAccess() {
         ContentResolver contentResolver = this.getContentResolver();
         String enabledNotificationListeners = Settings.Secure.getString(contentResolver, "enabled_notification_listeners");
         String packageName = this.getPackageName();
 
         // check to see if the enabledNotificationListeners String contains our package name
-        return !(enabledNotificationListeners == null || !enabledNotificationListeners.contains(packageName));
+        return (enabledNotificationListeners == null || !enabledNotificationListeners.contains(packageName));
     }
 
     public void askPermissions(View view) {
@@ -113,6 +115,14 @@ public class MainActivity extends AppCompatActivity {
                         Manifest.permission.WRITE_CALENDAR,
                         Manifest.permission.GET_ACCOUNTS},
                 FORTY_PERMISSIONS_REQUEST_CODE);
+    }
+
+    public void openPrivacyPolicyLink(View view) {
+        Uri webpage = Uri.parse(PRIVACY_POLICY_ADDRESS);
+        Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 
     private boolean hasPermission() {
@@ -125,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         return !(permissionCheckCalendarRead != PackageManager.PERMISSION_GRANTED ||
                 permissionCheckCalendarWrite != PackageManager.PERMISSION_GRANTED ||
                 permissionCheckGetAccount != PackageManager.PERMISSION_GRANTED ||
-                !hasNotificationAccess());
+                notificationAccess());
     }
 
     private void setScreen(boolean granted) {
@@ -150,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
             addPreferencesFromResource(R.xml.preferences);
 
             final ListPreference listPreference = (ListPreference) findPreference(CALENDAR_PREFERENCE_LIST);
-            Calendar calendar = new Calendar();
+            Calendar calendar = new Calendar(getActivity());
             List<Pair<String, String>> calendars = calendar.getCalendars();
             List<String> calendar_names = new ArrayList<>();
             List<String> calendar_ids = new ArrayList<>();

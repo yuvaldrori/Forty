@@ -1,6 +1,6 @@
 # **Forty** privacy policy
 
-## Requested permssions
+## Requested permissions
 1. Accounts.
 1. Calendars Read and write.
 1. Read notifications.

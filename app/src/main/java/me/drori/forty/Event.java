@@ -53,6 +53,7 @@ public class Event {
         if (id != event.id) return false;
         if (allDay != event.allDay) return false;
         if (!application.equals(event.application)) return false;
+        //noinspection SimplifiableIfStatement
         if (!title.equals(event.title)) return false;
         return description.equals(event.description);
 

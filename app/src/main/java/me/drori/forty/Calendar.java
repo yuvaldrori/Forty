@@ -54,8 +54,8 @@ class Calendar {
     //endregion
 
 
-    public Calendar() {
-        context = FortyNotificationListenerService.getContext();
+    public Calendar(Context context) {
+        this.context = context;
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         if (sharedPref != null) {
             this.calendarId = Long.parseLong(sharedPref.getString(MainActivity.CALENDAR_PREFERENCE_LIST, String.valueOf(NO_CALENDAR)));
@@ -64,9 +64,13 @@ class Calendar {
 
     private List<String> getAccounts() {
         List<String> accountsList = new ArrayList<>();
-        Account[] accounts = AccountManager.get(context).getAccounts();
-        for (Account account : accounts) {
-            accountsList.add(account.name);
+        try {
+            Account[] accounts = AccountManager.get(context).getAccounts();
+            for (Account account : accounts) {
+                accountsList.add(account.name);
+            }
+        } catch (SecurityException ignored) {
+
         }
         return accountsList;
     }

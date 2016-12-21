@@ -1,7 +1,6 @@
 package me.drori.forty;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -20,17 +19,11 @@ public class FortyNotificationListenerService extends NotificationListenerServic
     public static final String TAG = "FORTY";
     public static final List<String> SUPPORTED_APPS = Arrays.asList(PocketCasts.PKG_NAME, AntennaPod.PKG_NAME);
 
-    private static Context context;
     private Calendar calendar = null;
-
-    public static Context getContext() {
-        return FortyNotificationListenerService.context;
-    }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        context = this;
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -53,7 +46,7 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         }
 
         if (this.calendar == null) {
-            this.calendar = new Calendar();
+            this.calendar = new Calendar(this);
         }
 
         String pkgName = sbn.getPackageName();
