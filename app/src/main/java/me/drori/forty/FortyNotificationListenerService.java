@@ -17,7 +17,7 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     public static final String TAG = "FORTY";
-    public static final List<String> SUPPORTED_APPS = Arrays.asList(PocketCasts.PKG_NAME, AntennaPod.PKG_NAME);
+    public static final List<String> SUPPORTED_APPS = Arrays.asList(PocketCasts.PKG_NAME, AntennaPod.PKG_NAME, PodcastAddict.PKG_NAME);
 
     private Calendar calendar = null;
 
@@ -68,6 +68,9 @@ public class FortyNotificationListenerService extends NotificationListenerServic
                 break;
             case AntennaPod.PKG_NAME:
                 notification = new AntennaPod(sbn).getNotification();
+                break;
+            case PodcastAddict.PKG_NAME:
+                notification = new PodcastAddict(sbn).getNotification();
                 break;
         }
         if (notification == null) {
