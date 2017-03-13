@@ -3,14 +3,14 @@ package me.drori.forty;
 public class Notification {
 
     private String application;
-    private String title;
-    private String text;
+    private String podcast;
+    private String episode;
     private long time;
 
     public Notification(String application, String title, String text, long time) {
         this.application = application;
-        this.title = title;
-        this.text = text;
+        this.podcast = title;
+        this.episode = text;
         this.time = time;
     }
 
@@ -22,20 +22,20 @@ public class Notification {
         this.application = application;
     }
 
-    public String getTitle() {
-        return title;
+    public String getPodcast() {
+        return podcast;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setPodcast(String podcast) {
+        this.podcast = podcast;
     }
 
-    public String getText() {
-        return text;
+    public String getEpisode() {
+        return episode;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setEpisode(String episode) {
+        this.episode = episode;
     }
 
     public long getTime() {

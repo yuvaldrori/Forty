@@ -9,18 +9,20 @@ class PodcastAddict {
 
     private String podcast;
     private String episode;
+    private int priority;
     private final long time;
-    private final android.app.Notification.Action[] actions;
 
     public PodcastAddict(StatusBarNotification sbn) {
-        // actions
-        actions = sbn.getNotification().actions;
+
+        this.priority = sbn.getNotification().priority;
 
         // details
         Bundle extras = sbn.getNotification().extras;
         if (extras != null) {
-            // android.title has the app name instead of the podcast name
-            this.podcast = extras.getString("android.text");
+            this.podcast = extras.getString("podcastName");
+            if (this.podcast == null) {
+                this.podcast = "";
+            }
             this.episode = extras.getString("android.text");
         }
 
@@ -29,6 +31,10 @@ class PodcastAddict {
     }
 
     public Notification getNotification() {
+        // ignore some notifications
+        if (this.priority < 1) {
+            return null;
+        }
         return new Notification(PKG_NAME, podcast, episode, time);
     }
 }

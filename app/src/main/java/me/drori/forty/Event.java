@@ -15,14 +15,14 @@ public class Event {
     private String title;
     private String description;
 
-    public Event(long begin, long end, long id, boolean allDay, String title, String description) {
+    public Event(long begin, long end, long id, boolean allDay, String podcast, String episode) {
         this.begin = begin;
         this.end = end;
         this.id = id;
         this.allDay = allDay;
-        this.title = title;
-        this.description = description;
-        String[] lines = description.split("\n");
+        this.title = podcast;
+        this.description = episode;
+        String[] lines = episode.split("\n");
         if (lines.length > 1) {
             this.application = lines[lines.length - 1];
         } else {
@@ -37,7 +37,13 @@ public class Event {
         this.id = NEW_EVENT;
         this.allDay = true;
         this.application = notification.getApplication();
-        this.title = MessageFormat.format("{0}, {1}", notification.getText(), notification.getTitle());
+        String podcast = notification.getPodcast();
+        String episode = notification.getEpisode();
+        if (podcast.equals("")) {
+            this.title = episode;
+        } else {
+            this.title = MessageFormat.format("{0}, {1}", notification.getEpisode(), notification.getPodcast());
+        }
         this.description = MessageFormat.format("{0}\n{1}", this.title, this.application);
     }
 
