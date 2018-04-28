@@ -18,31 +18,16 @@ public class Notification {
         return application;
     }
 
-    public void setApplication(String application) {
-        this.application = application;
-    }
-
     public String getPodcast() {
         return podcast;
-    }
-
-    public void setPodcast(String podcast) {
-        this.podcast = podcast;
     }
 
     public String getEpisode() {
         return episode;
     }
 
-    public void setEpisode(String episode) {
-        this.episode = episode;
-    }
-
     public long getTime() {
         return time;
     }
 
-    public void setTime(long time) {
-        this.time = time;
-    }
 }

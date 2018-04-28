@@ -1,7 +1,5 @@
 package me.drori.forty;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -14,6 +12,7 @@ import android.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.TimeZone;
 
 class Calendar {
@@ -62,49 +61,34 @@ class Calendar {
         }
     }
 
-    private List<String> getAccounts() {
-        List<String> accountsList = new ArrayList<>();
-        try {
-            Account[] accounts = AccountManager.get(context).getAccounts();
-            for (Account account : accounts) {
-                accountsList.add(account.name);
-            }
-        } catch (SecurityException ignored) {
-
-        }
-        return accountsList;
-    }
-
     public List<Pair<String, String>> getCalendars() {
         List<Pair<String, String>> calendars = new ArrayList<>();
         Cursor cur = null;
         ContentResolver cr = context.getContentResolver();
         Uri uri = CalendarContract.Calendars.CONTENT_URI;
-        for (String account : getAccounts()) {
-            String selection = "((" + CalendarContract.Calendars.ACCOUNT_NAME + " = ?) AND ("
-            + CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL + " = ? ))";
-            String[] selectionArgs = new String[]{account, Integer.toString(CalendarContract.Calendars.CAL_ACCESS_OWNER)};
-            try {
-                cur = cr.query(uri, CALENDAR_PROJECTION, selection, selectionArgs, null);
 
-                while (cur.moveToNext()) {
-                    String calID;
-                    String displayName;
+        String selection = "((" + CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL + " = ? ))";
+        String[] selectionArgs = new String[]{Integer.toString(CalendarContract.Calendars.CAL_ACCESS_OWNER)};
+        try {
+            cur = cr.query(uri, CALENDAR_PROJECTION, selection, selectionArgs, null);
 
-                    // Get the field values
-                    calID = String.valueOf(cur.getLong(CALENDAR_PROJECTION_ID_INDEX));
-                    displayName = cur.getString(CALENDAR_PROJECTION_DISPLAY_NAME_INDEX);
-                    Pair<String, String> tup = Pair.create(displayName, calID);
-                    if (!calendars.contains(tup)) {
-                        calendars.add(tup);
-                    }
+            while (Objects.requireNonNull(cur).moveToNext()) {
+                String calID;
+                String displayName;
+
+                // Get the field values
+                calID = String.valueOf(cur.getLong(CALENDAR_PROJECTION_ID_INDEX));
+                displayName = cur.getString(CALENDAR_PROJECTION_DISPLAY_NAME_INDEX);
+                Pair<String, String> tup = Pair.create(displayName, calID);
+                if (!calendars.contains(tup)) {
+                    calendars.add(tup);
                 }
-            } catch (SecurityException ignored) {
+            }
+        } catch (SecurityException ignored) {
 
-            } finally {
-                if (cur != null && !cur.isClosed()) {
-                    cur.close();
-                }
+        } finally {
+            if (cur != null && !cur.isClosed()) {
+                cur.close();
             }
         }
         return calendars;
@@ -161,7 +145,7 @@ class Calendar {
                     selection,
                     selectionArgs,
                     CalendarContract.Events.DTSTART + " DESC");
-            while (cur.moveToNext()) {
+            while (Objects.requireNonNull(cur).moveToNext()) {
                 long eventId = cur.getLong(EVENT_PROJECTION_ID_INDEX);
                 String title = cur.getString(EVENT_PROJECTION_TITLE_INDEX);
                 String description = cur.getString(EVENT_PROJECTION_DESCRIPTION_INDEX);

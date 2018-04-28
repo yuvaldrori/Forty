@@ -112,8 +112,7 @@ public class MainActivity extends AppCompatActivity {
     public void askPermissions(View view) {
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.READ_CALENDAR,
-                        Manifest.permission.WRITE_CALENDAR,
-                        Manifest.permission.GET_ACCOUNTS},
+                        Manifest.permission.WRITE_CALENDAR},
                 FORTY_PERMISSIONS_REQUEST_CODE);
     }
 
@@ -130,11 +129,8 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.WRITE_CALENDAR);
         int permissionCheckCalendarRead = ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_CALENDAR);
-        int permissionCheckGetAccount = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.GET_ACCOUNTS);
         return !(permissionCheckCalendarRead != PackageManager.PERMISSION_GRANTED ||
                 permissionCheckCalendarWrite != PackageManager.PERMISSION_GRANTED ||
-                permissionCheckGetAccount != PackageManager.PERMISSION_GRANTED ||
                 notificationAccess());
     }
 

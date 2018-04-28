@@ -5,7 +5,7 @@ import java.util.List;
 
 class Logic {
 
-    private List<Event> events = new ArrayList<>();
+    private List<Event> events;
     private final Notification notification;
 
     public Logic(List<Event> events, Notification notification) {

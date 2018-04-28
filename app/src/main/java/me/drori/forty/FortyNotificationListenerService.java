@@ -16,8 +16,9 @@ import java.util.List;
 public class FortyNotificationListenerService extends NotificationListenerService
         implements SharedPreferences.OnSharedPreferenceChangeListener{
 
-    public static final String TAG = "FORTY";
-    public static final List<String> SUPPORTED_APPS = Arrays.asList(PocketCasts.PKG_NAME, AntennaPod.PKG_NAME, PodcastAddict.PKG_NAME);
+    private static final String TAG = "FORTY";
+    public static final List<String> SUPPORTED_APPS = Arrays.asList(PocketCasts.PKG_NAME,
+            AntennaPod.PKG_NAME, PodcastAddict.PKG_NAME, GoogleQuickSearchBox.PKG_NAME);
 
     private Calendar calendar = null;
 
@@ -29,8 +30,7 @@ public class FortyNotificationListenerService extends NotificationListenerServic
 
     private boolean hasPermissions() {
         return (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED)
-                && (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED)
-                && (ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) == PackageManager.PERMISSION_GRANTED);
+                && (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED);
     }
 
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
@@ -40,7 +40,7 @@ public class FortyNotificationListenerService extends NotificationListenerServic
         }
     }
 
-    public void run(StatusBarNotification sbn) {
+    private void run(StatusBarNotification sbn) {
         if (!hasPermissions()) {
             return;
         }
@@ -71,6 +71,9 @@ public class FortyNotificationListenerService extends NotificationListenerServic
                 break;
             case PodcastAddict.PKG_NAME:
                 notification = new PodcastAddict(sbn).getNotification();
+                break;
+            case GoogleQuickSearchBox.PKG_NAME:
+                notification = new GoogleQuickSearchBox(sbn).getNotification();
                 break;
         }
         if (notification == null) {

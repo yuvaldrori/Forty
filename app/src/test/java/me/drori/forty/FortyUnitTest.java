@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
  */
 public class FortyUnitTest {
     @Test
-    public void test_description() throws Exception {
+    public void test_description() {
         String app = "app1";
         String title = "podcast 1";
         String text = "episode 1";
@@ -24,7 +24,7 @@ public class FortyUnitTest {
     }
 
     @Test
-    public void test_application() throws  Exception {
+    public void test_application() {
         String app = "app1";
         String title = "podcast 1";
         String text = "episode 1";
@@ -35,7 +35,7 @@ public class FortyUnitTest {
     }
 
     @Test
-    public void test_event_exists() throws Exception {
+    public void test_event_exists() {
         String app = "app1";
         String title = "podcast 1";
         String text = "episode 1";
@@ -50,7 +50,7 @@ public class FortyUnitTest {
     }
 
     @Test
-    public void test_event_new() throws Exception {
+    public void test_event_new() {
         String app = "app2";
         String title = "podcast 1";
         String text = "episode ";

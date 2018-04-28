@@ -1,13 +1,12 @@
 # **Forty** privacy policy
 
 ## Requested permissions
-1. Accounts.
+1. Accounts - for Forty versions prior to 3.6.
 1. Calendars Read and write.
 1. Read notifications.
 
 ## Use of the above requested permissions
-On first use, **Forty** lists all accounts and calendars found in the accounts and creates a list
-for the user to pick the calendar to sync with.
+On first use, **Forty** enumerates available calendars for the user to pick the calender to sync with.
 
 **Forty** listens to every notification. If the notification comes from one of the **Forty** supported apps,
 **Forty** will read the episode metadata such as episode name and description.
